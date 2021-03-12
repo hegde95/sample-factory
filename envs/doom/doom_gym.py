@@ -243,6 +243,8 @@ class VizdoomEnv(gym.Env):
             self.game.add_game_args('+am_thingcolor_item 00ff00')
             # self.game.add_game_args("+am_thingcolor_citem 00ff00")
 
+        # added extra line here
+        self.game.set_sound_enabled(True)
         self._game_init()
         self.initialized = True
 
@@ -413,10 +415,10 @@ class VizdoomEnv(gym.Env):
 
         default_info = {'num_frames': self.skip_frames}
         reward = self.game.make_action(actions_flattened, self.skip_frames)
-        state = self.game.get_state()
+        self.state = self.game.get_state()
         done = self.game.is_episode_finished()
 
-        observation, done, info = self._process_game_step(state, done, default_info)
+        observation, done, info = self._process_game_step(self.state, done, default_info)
         return observation, reward, done, info
 
     def render(self, mode='human'):

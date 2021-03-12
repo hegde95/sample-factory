@@ -15,6 +15,7 @@ from envs.doom.wrappers.reward_shaping import true_reward_final_position, DoomRe
 from envs.doom.wrappers.scenario_wrappers.gathering_reward_shaping import DoomGatheringRewardShaping
 from envs.env_wrappers import ResizeWrapper, RewardScalingWrapper, TimeLimitWrapper, RecordingWrapper, \
     PixelFormatChwWrapper
+from envs.doom.wrappers.sound_wrapper import DoomSound
 from utils.utils import log
 
 
@@ -47,6 +48,7 @@ class DoomSpec:
         self.extra_wrappers = extra_wrappers
 
 
+SOUND_INPUT = (DoomSound, {}) # sound input
 ADDITIONAL_INPUT = (DoomAdditionalInput, {})  # health, ammo, etc. as input vector
 BATTLE_REWARD_SHAPING = (DoomRewardShapingWrapper, dict(reward_shaping_scheme=REWARD_SHAPING_BATTLE, true_reward_func=None))  # "true" reward None means just the env reward (monster kills)
 BOTS_REWARD_SHAPING = (DoomRewardShapingWrapper, dict(reward_shaping_scheme=REWARD_SHAPING_DEATHMATCH_V0, true_reward_func=true_reward_frags))
@@ -157,6 +159,9 @@ DOOM_ENVS = [
     # we measure throughput with 128x72 input resolution, 4-frameskip and original game resolution of 160x120
     # (no widescreen)
     DoomSpec('doom_benchmark', 'battle.cfg', Discrete(1 + 8), 1.0, 2100),
+    DoomSpec('doom_sound', 'sound.cfg', doom_action_space_basic(), 1.0, 
+        extra_wrappers=[SOUND_INPUT]
+    ),
 ]
 
 

@@ -1,0 +1,83 @@
+from random import choice
+import numpy as np
+import os
+
+
+from envs.doom.doom_utils import make_doom_env
+from algorithms.utils.arguments import default_cfg
+
+
+import cv2
+from scipy.io.wavfile import write
+import moviepy.editor as mpe
+import matplotlib.pyplot as plot
+
+
+def default_doom_cfg():
+    return default_cfg(env='doom_env')
+
+if __name__ == "__main__":
+
+    env = make_doom_env('doom_sound', cfg=default_doom_cfg(), env_config=None)
+    sleep_time = 1.0 / 35
+    sf = env.skip_frames
+    sleep_time *= sf
+
+    audios = []
+    screens = []
+
+    frames = 0
+    episodes = 5
+
+
+    actions1 = [0,1,2]
+    actions2 = [0,1,2]
+
+
+    for i in range(episodes):
+        print("Episode #" + str(i + 1))
+        step = 0
+        state = env.reset()
+        done = False
+        while not env.game.is_episode_finished() or not done:
+            if step % 10 == 0:
+                ac = [choice(actions1), choice(actions2)]
+            next_state, reward, done, info = env.step(ac)
+            frames += 1
+
+
+            if not done and env.unwrapped.state.audio_buffer is not None:
+                # audio = state["sound"]
+                audio = env.unwrapped.state.audio_buffer
+                screen = state["obs"]
+
+                audios.extend(list(audio))
+                screens.append(np.swapaxes(np.swapaxes(screen,0,1),1,2))
+
+            state = next_state
+            step += 1
+            frames += 1
+
+    
+    audios = np.array(audios)
+    videos = np.array(screens)
+
+    ran = np.random.randint(200)
+    os.makedirs("trials/"+str(ran), exist_ok=True)
+
+    plot.specgram(audios[:,0])
+    plot.savefig('trials/'+ str(ran) +'/specl.png')
+    plot.specgram(audios[:,1])
+    plot.savefig('trials/'+ str(ran) +'/specr.png')
+
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+    out = cv2.VideoWriter('trials/'+ str(ran) +'/video.mp4', fourcc, 35/sf, (128,72))
+    for i in range(len(screens)):
+        out.write(screens[i])
+    out.release()
+    write('trials/'+ str(ran) +'/audio.wav', 44100, audios)
+    # print("total audio time should be :" + str(d))
+    my_clip = mpe.VideoFileClip('trials/'+ str(ran) +'/video.mp4')
+    audio_background = mpe.AudioFileClip('trials/'+ str(ran) +'/audio.wav')
+    final_clip = my_clip.set_audio(audio_background)
+    final_clip.write_videofile("trials/"+ str(ran) +"/movie.mp4")

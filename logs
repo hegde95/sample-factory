@@ -1,0 +1,11 @@
+14 works with update only on the last tic, also the model encoder is a just flatten
+
+15 does not work, learns to go to any target ir respective of the sound source, here we are updating the buffer at each tic to get complete sound
+
+16 does not work, learns to go to any target ir respective of the sound source, here we are updating the buffer at each tic to get complete sound, checked boolean values
+
+17 works, here we are updating the buffer at the final tic only to get complete sound, checked boolean values
+
+
+
+
