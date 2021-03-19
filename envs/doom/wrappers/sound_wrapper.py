@@ -7,7 +7,7 @@ class DoomSound(gym.Wrapper):
     def __init__(self, env):
         super().__init__(env)
         current_obs_space = self.observation_space
-        self.aud_len = 1260 * 4
+        self.aud_len = 630 * 4
         self.unwrapped.skip_frames = 4
 
         audio_shape = [self.aud_len,2]

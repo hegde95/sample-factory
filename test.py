@@ -75,7 +75,7 @@ if __name__ == "__main__":
     for i in range(len(screens)):
         out.write(screens[i])
     out.release()
-    write('trials/'+ str(ran) +'/audio.wav', 44100, audios)
+    write('trials/'+ str(ran) +'/audio.wav', 22050, audios)
     # print("total audio time should be :" + str(d))
     my_clip = mpe.VideoFileClip('trials/'+ str(ran) +'/video.mp4')
     audio_background = mpe.AudioFileClip('trials/'+ str(ran) +'/audio.wav')
