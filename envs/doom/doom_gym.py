@@ -11,7 +11,7 @@ import gym
 import numpy as np
 from filelock import FileLock, Timeout
 from gym.utils import seeding
-from vizdoom.vizdoom import ScreenResolution, DoomGame, Mode, AutomapMode
+from vizdoom.vizdoom import ScreenResolution, DoomGame, Mode, AutomapMode, SamplingRate
 
 from algorithms.utils.spaces.discretized import Discretized
 from utils.utils import log, project_tmp_dir
@@ -106,6 +106,9 @@ class VizdoomEnv(gym.Env):
         self.screen_w, self.screen_h, self.channels = 640, 480, 3
         self.screen_resolution = ScreenResolution.RES_640X480
         self.calc_observation_space()
+
+        # added 1 extra lines here
+        self.sampling_freq = SamplingRate.SR_22050
 
         self.black_screen = None
 
@@ -243,8 +246,10 @@ class VizdoomEnv(gym.Env):
             self.game.add_game_args('+am_thingcolor_item 00ff00')
             # self.game.add_game_args("+am_thingcolor_citem 00ff00")
 
-        # added extra line here
+        # added 2 extra line here
         self.game.set_sound_enabled(True)
+        self.game.set_sound_sampling_freq(self.sampling_freq)
+
         self._game_init()
         self.initialized = True
 

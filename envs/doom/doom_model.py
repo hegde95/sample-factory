@@ -9,7 +9,9 @@ from algorithms.utils.pytorch_utils import calc_num_elements
 from utils.utils import log
 
 
+# SAMPLE_RATE = 44100
 SAMPLE_RATE = 22050
+# SAMPLE_RATE = 11025
 
 
 class VizdoomEncoder(EncoderBase):

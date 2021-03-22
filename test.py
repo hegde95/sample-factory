@@ -23,6 +23,7 @@ if __name__ == "__main__":
     sf = env.skip_frames
     sleep_time *= sf
 
+
     audios = []
     screens = []
 
@@ -38,6 +39,8 @@ if __name__ == "__main__":
         print("Episode #" + str(i + 1))
         step = 0
         state = env.reset()
+        # sampling_freq = env.game.get_sound_sampling_freq()
+        # env.game.set_sound_sampling_freq(sampling_freq)
         done = False
         while not env.game.is_episode_finished() or not done:
             if step % 10 == 0:
@@ -75,7 +78,7 @@ if __name__ == "__main__":
     for i in range(len(screens)):
         out.write(screens[i])
     out.release()
-    write('trials/'+ str(ran) +'/audio.wav', 22050, audios)
+    write('trials/'+ str(ran) +'/audio.wav', env.sampling_rate_int, audios)
     # print("total audio time should be :" + str(d))
     my_clip = mpe.VideoFileClip('trials/'+ str(ran) +'/video.mp4')
     audio_background = mpe.AudioFileClip('trials/'+ str(ran) +'/audio.wav')
