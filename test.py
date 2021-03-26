@@ -18,7 +18,8 @@ def default_doom_cfg():
 
 if __name__ == "__main__":
 
-    env = make_doom_env('doom_sound', cfg=default_doom_cfg(), env_config=None)
+    # env = make_doom_env('doom_sound', cfg=default_doom_cfg(), env_config=None)
+    env = make_doom_env('doom_sound_multi', cfg=default_doom_cfg(), env_config=None)
     sleep_time = 1.0 / 35
     sf = env.skip_frames
     sleep_time *= sf
