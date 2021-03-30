@@ -8,10 +8,15 @@ from algorithms.appo.model_utils import get_obs_shape, nonlinearity, create_stan
 from algorithms.utils.pytorch_utils import calc_num_elements
 from utils.utils import log
 
+# Sampling rate.
+# NOTE: Must match with whatever game returns
+# DEFAULT_SAMPLE_RATE = 44100
+DEFAULT_SAMPLE_RATE = 22050
+# DEFAULT_SAMPLE_RATE = 11025
 
-# SAMPLE_RATE = 44100
-SAMPLE_RATE = 22050
-# SAMPLE_RATE = 11025
+# How many frames of data have been concatenated.
+# Again, following code will break if this is not correct!
+DEFAULT_FRAMESKIP = 4
 
 
 class VizdoomEncoder(EncoderBase):
@@ -50,29 +55,36 @@ class VizdoomSoundEncoder(EncoderBase):
     def __init__(self, cfg, obs_space, timing):
         super().__init__(cfg, timing)
 
+        # TODO how to pass this argument in above params?
+        #      Available encoders:
+        #      ["fft", "logmel"]
+        #      "logmel" is one that has been used so far (before 30th March)
+        self.audio_encoder_type = "logmel"
+        # TODO these parameters are fed to the audio buffer.
+        #      If they change in ViZDoom, remember to change them here!
+        self.sample_rate = DEFAULT_SAMPLE_RATE
+        self.frameskip = DEFAULT_FRAMESKIP
+
         self.basic_encoder = create_standard_encoder(cfg, obs_space, timing)
         self.encoder_out_size = self.basic_encoder.encoder_out_size
         obs_shape = get_obs_shape(obs_space)
-        # obs_shape.sound is 5040 x 2
 
         self.sound_head = None
         if 'sound' in obs_shape:
-            self.sound_head = nn.Sequential(
-                LogMelAudioEncoder(),
-                nn.Flatten(),
-                nn.ReLU(),
-
-                #AudioEncoder(),
-                #nn.Flatten(),
-                #nn.Linear(4800, 64),
-                #nn.ReLU(),
-
-                #nn.Flatten(),
-                #nn.Linear(obs_shape.sound[0]*obs_shape.sound[1], 128),
-                #nn.ReLU(),
-                #nn.Linear(128, 32),
-                #nn.ReLU(),
-            )
+            if self.audio_encoder_type == "fft":
+                self.sound_head = nn.Sequential(
+                    SimpleFFTAudioEncoder(self.sample_rate, self.frameskip),
+                    nn.Flatten(),
+                    nn.ReLU()
+                )
+            elif self.audio_encoder_type == "logmel":
+                self.sound_head = nn.Sequential(
+                    LogMelAudioEncoder(self.sample_rate, self.frameskip),
+                    nn.Flatten(),
+                    nn.ReLU(),
+                )
+            else:
+                raise NotImplementedError("Audio encoder {} not implemented".format(self.audio_encoder_type))
             sound_out_size = calc_num_elements(self.sound_head, obs_shape.sound)
             self.encoder_out_size += sound_out_size
 
@@ -94,18 +106,18 @@ class VizdoomSoundEncoder(EncoderBase):
         return x
 
 class LogMelAudioEncoder(nn.Module):
-    def __init__(self):
+    def __init__(self, sample_rate, frameskip):
         super(LogMelAudioEncoder, self).__init__()
 
         # Anssi: These are just parameters I took from
         #        state-of-the-art-ish speaker recognition system
         #        https://www.isca-speech.org/archive/Odyssey_2020/pdfs/65.pdf
         self.mel_spectrogram = torchaudio.transforms.MelSpectrogram(
-            sample_rate=SAMPLE_RATE,
+            sample_rate=sample_rate,
             n_mels=80,
-            n_fft=int(SAMPLE_RATE * 0.025),
-            win_length=int(SAMPLE_RATE * 0.025),
-            hop_length=int(SAMPLE_RATE * 0.01),
+            n_fft=int(sample_rate * 0.025),
+            win_length=int(sample_rate * 0.025),
+            hop_length=int(sample_rate * 0.01),
             f_min=20,
             f_max=7600,
         )
@@ -126,8 +138,6 @@ class LogMelAudioEncoder(nn.Module):
         x1 = self.pool(x1)
         x1 = F.relu(self.conv2(x1))
         x1 = self.pool(x1)
-        # x1 = F.relu(self.conv3(x1))
-
 
         # Right channel encoder
         x2 = torch.log(self.mel_spectrogram(x2) + 1e-5)
@@ -136,11 +146,63 @@ class LogMelAudioEncoder(nn.Module):
         x2 = self.pool(x2)
         x2 = F.relu(self.conv2(x2))
         x2 = self.pool(x2)
-        # x2 = F.relu(self.conv3(x2))
-
 
         x = torch.cat((x1,x2), dim=1)
         return x
+
+
+class SimpleFFTAudioEncoder(nn.Module):
+    """Very simple audio processing:
+    FFT -> magnitude -> log -> subsample (maxpool) -> few linear layers
+    """
+    def __init__(self, sample_rate, frameskip):
+        super(SimpleFFTAudioEncoder, self).__init__()
+        self.num_to_subsample = 8
+        # ViZDoom runs at 35 fps, but we will get frameskip number of
+        # frames in total (concatenated)
+        self.num_frequencies = ((sample_rate / 35) * frameskip) / 2
+        assert int(self.num_frequencies) == self.num_frequencies
+
+        # Subsampler
+        self.pool = torch.nn.MaxPool1d(self.num_to_subsample)
+
+        # Encoder (small MLP)
+        self.linear1 = torch.nn.Linear(int(self.num_frequencies / self.num_to_subsample), 256)
+        self.linear2 = torch.nn.Linear(256, 256)
+
+    def _torch_1d_fft_magnitude(self, x):
+        """Perform 1D FFT on x with shape (batch_size, num_samples), and return magnitudes"""
+        # Add zero imaginery parts
+        x = torch.stack((x, torch.zeros_like(x)), dim=-1)
+        ffts = torch.fft(x, signal_ndim=1)
+        # Remove mirrored part
+        ffts = ffts[:, :(ffts.shape[1] // 2), :]
+        # To magnitudes
+        mags = torch.sqrt(ffts[..., 0]**2 + ffts[..., 1]**2)
+        return mags
+
+    def _encode_channel(self, x):
+        """Shape of x: [batch_size, num_samples]"""
+        # TODO Torch 1.8 has "torch.fft.fft"
+        mags = self._torch_1d_fft_magnitude(x)
+        mags = torch.log(mags + 1e-5)
+
+        # Add and remove "channel" dim...
+        x = self.pool(mags[:, None, :])[:, 0, :]
+        x = F.relu(self.linear1(x))
+        x = F.relu(self.linear2(x))
+
+        return x
+
+    def forward(self, x):
+        x1 = x[:,:,0]
+        x2 = x[:,:,1]
+
+        x1 = self._encode_channel(x1)
+        x2 = self._encode_channel(x2)
+        x = torch.cat((x1, x2), dim=1)
+        return x
+
 
 class AudioEncoder(nn.Module):
     def __init__(self):
@@ -167,7 +229,6 @@ class AudioEncoder(nn.Module):
         x1 = self.pool(x1)
         # x1 = F.relu(self.conv3(x1))
 
-
         # Right channel encoder
         x2 = self.spec(x2)
         x2 = torch.reshape(x2, (x2.shape[0], 1, x2.shape[1], x2.shape[2]))
@@ -177,8 +238,7 @@ class AudioEncoder(nn.Module):
         x2 = self.pool(x2)
         # x2 = F.relu(self.conv3(x2))
 
-
-        x = torch.cat((x1,x2), dim=1)     
+        x = torch.cat((x1,x2), dim=1)
         return x
 
 def register_models():
