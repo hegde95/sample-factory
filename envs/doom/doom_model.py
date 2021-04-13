@@ -167,6 +167,8 @@ class SimpleFFTAudioEncoder(nn.Module):
         self.num_samples = (sample_rate / 35) * frameskip
         self.num_frequencies = self.num_samples / 2
         assert int(self.num_samples) == self.num_samples
+        self.num_samples = int(self.num_samples)
+        self.num_frequencies = int(self.num_frequencies)
 
         self.hamming_window = torch.hamming_window(self.num_samples)
 
@@ -180,6 +182,8 @@ class SimpleFFTAudioEncoder(nn.Module):
     def _torch_1d_fft_magnitude(self, x):
         """Perform 1D FFT on x with shape (batch_size, num_samples), and return magnitudes"""
         # Apply hamming window
+        if x.device != self.hamming_window.device:
+            self.hamming_window = self.hamming_window.to(x.device)
         x = x * self.hamming_window
         # Add zero imaginery parts
         x = torch.stack((x, torch.zeros_like(x)), dim=-1)
