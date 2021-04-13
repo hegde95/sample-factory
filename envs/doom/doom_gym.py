@@ -108,7 +108,7 @@ class VizdoomEnv(gym.Env):
         self.calc_observation_space()
 
         # added 1 extra lines here
-        self.sampling_freq = SamplingRate.SR_22050
+        self.sampling_freq = SamplingRate.SR_44100
 
         self.black_screen = None
 

@@ -10,8 +10,8 @@ from utils.utils import log
 
 # Sampling rate.
 # NOTE: Must match with whatever game returns
-# DEFAULT_SAMPLE_RATE = 44100
-DEFAULT_SAMPLE_RATE = 22050
+DEFAULT_SAMPLE_RATE = 44100
+# DEFAULT_SAMPLE_RATE = 22050
 # DEFAULT_SAMPLE_RATE = 11025
 
 # How many frames of data have been concatenated.
@@ -59,7 +59,7 @@ class VizdoomSoundEncoder(EncoderBase):
         #      Available encoders:
         #      ["fft", "logmel"]
         #      "logmel" is one that has been used so far (before 30th March)
-        self.audio_encoder_type = "logmel"
+        self.audio_encoder_type = "fft"
         # TODO these parameters are fed to the audio buffer.
         #      If they change in ViZDoom, remember to change them here!
         self.sample_rate = DEFAULT_SAMPLE_RATE
