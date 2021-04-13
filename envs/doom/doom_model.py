@@ -218,7 +218,7 @@ class SimpleRawSamplesEncoder(nn.Module):
     Samples -> Downsample (pick Nth) -> Few 1D convolutions
     """
     def __init__(self, sample_rate, frameskip):
-        super(SimpleFFTAudioEncoder, self).__init__()
+        super(SimpleRawSamplesEncoder, self).__init__()
         self.num_to_subsample = 8
         # ViZDoom runs at 35 fps, but we will get frameskip number of
         # frames in total (concatenated)
@@ -227,8 +227,8 @@ class SimpleRawSamplesEncoder(nn.Module):
 
         # Encoder (small 1D conv)
         self.pool = torch.nn.MaxPool1d(2)
-        self.conv1 = torch.nn.Conv1d(1, 16, size=16, stride=8)
-        self.conv2 = torch.nn.Conv1d(16, 32, size=16, stride=8)
+        self.conv1 = torch.nn.Conv1d(1, 16, kernel_size=16, stride=8)
+        self.conv2 = torch.nn.Conv1d(16, 32, kernel_size=16, stride=8)
 
     def _encode_channel(self, x):
         """Shape of x: [batch_size, num_samples]"""
@@ -296,17 +296,17 @@ class AudioEncoder(nn.Module):
 # Dummy classes for the following registration
 class VizdoomSoundEncoderLogMel(VizdoomSoundEncoder):
     def __init__(self, cfg, obs_space, timing):
-        super(VizdoomSoundEncoder, self).__init__(cfg, obs_space, timing, audio_encoder_type="logmel")
+        super().__init__(cfg, obs_space, timing, audio_encoder_type="logmel")
 
 
 class VizdoomSoundEncoderFFT(VizdoomSoundEncoder):
     def __init__(self, cfg, obs_space, timing):
-        super(VizdoomSoundEncoder, self).__init__(cfg, obs_space, timing, audio_encoder_type="fft")
+        super().__init__(cfg, obs_space, timing, audio_encoder_type="fft")
 
 
 class VizdoomSoundEncoderSamples(VizdoomSoundEncoder):
     def __init__(self, cfg, obs_space, timing):
-        super(VizdoomSoundEncoder, self).__init__(cfg, obs_space, timing, audio_encoder_type="samples")
+        super().__init__(cfg, obs_space, timing, audio_encoder_type="samples")
 
 
 def register_models():
