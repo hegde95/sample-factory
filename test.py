@@ -5,6 +5,7 @@ import os
 
 from envs.doom.doom_utils import make_doom_env
 from algorithms.utils.arguments import default_cfg
+from algorithms.utils.multi_agent_wrapper import MultiAgentWrapper, is_multiagent_env
 
 
 import cv2
@@ -18,8 +19,10 @@ def default_doom_cfg():
 
 if __name__ == "__main__":
 
-    # env = make_doom_env('doom_sound', cfg=default_doom_cfg(), env_config=None)
-    env = make_doom_env('doom_sound_multi', cfg=default_doom_cfg(), env_config=None)
+    env = make_doom_env('doom_sound', cfg=default_doom_cfg(), env_config=None)
+    # env = make_doom_env('doom_sound_multi', cfg=default_doom_cfg(), env_config=None)
+    # env = MultiAgentWrapper(env)
+    
     sleep_time = 1.0 / 35
     sf = env.skip_frames
     sleep_time *= sf
@@ -51,8 +54,8 @@ if __name__ == "__main__":
 
 
             if not done and env.unwrapped.state.audio_buffer is not None:
-                # audio = state["sound"]
-                audio = env.unwrapped.state.audio_buffer
+                audio = state["sound"]
+                # audio = env.unwrapped.state.audio_buffer
                 screen = state["obs"]
 
                 audios.extend(list(audio))

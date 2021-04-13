@@ -10,8 +10,8 @@ from utils.utils import log
 
 # Sampling rate.
 # NOTE: Must match with whatever game returns
-# DEFAULT_SAMPLE_RATE = 44100
-DEFAULT_SAMPLE_RATE = 22050
+DEFAULT_SAMPLE_RATE = 44100
+# DEFAULT_SAMPLE_RATE = 22050
 # DEFAULT_SAMPLE_RATE = 11025
 
 # How many frames of data have been concatenated.
@@ -56,7 +56,6 @@ class VizdoomSoundEncoder(EncoderBase):
     """
     def __init__(self, cfg, obs_space, timing, audio_encoder_type="logmel"):
         super().__init__(cfg, timing)
-
         self.audio_encoder_type = audio_encoder_type
         # TODO these parameters are fed to the audio buffer.
         #      If they change in ViZDoom, remember to change them here!
