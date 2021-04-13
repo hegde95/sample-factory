@@ -50,16 +50,14 @@ class VizdoomEncoder(EncoderBase):
         return x
 
 
-
 class VizdoomSoundEncoder(EncoderBase):
-    def __init__(self, cfg, obs_space, timing):
+    """
+    audio_encoder_type: Type of audio encoder to use (available: "logmel", "fft", "samples")
+    """
+    def __init__(self, cfg, obs_space, timing, audio_encoder_type="logmel"):
         super().__init__(cfg, timing)
 
-        # TODO how to pass this argument in above params?
-        #      Available encoders:
-        #      ["fft", "logmel"]
-        #      "logmel" is one that has been used so far (before 30th March)
-        self.audio_encoder_type = "logmel"
+        self.audio_encoder_type = audio_encoder_type
         # TODO these parameters are fed to the audio buffer.
         #      If they change in ViZDoom, remember to change them here!
         self.sample_rate = DEFAULT_SAMPLE_RATE
@@ -83,6 +81,12 @@ class VizdoomSoundEncoder(EncoderBase):
                     nn.Flatten(),
                     nn.ReLU(),
                 )
+            elif self.audio_encoder_type == "samples":
+                self.sound_head = nn.Sequential(
+                    SimpleRawSamplesEncoder(self.sample_rate, self.frameskip),
+                    nn.Flatten(),
+                    nn.ReLU(),
+                )
             else:
                 raise NotImplementedError("Audio encoder {} not implemented".format(self.audio_encoder_type))
             sound_out_size = calc_num_elements(self.sound_head, obs_shape.sound)
@@ -93,17 +97,18 @@ class VizdoomSoundEncoder(EncoderBase):
     def forward(self, obs_dict):
         x = self.basic_encoder(obs_dict)
 
-        
+
         if self.sound_head is not None:
 
             # Normalize to [-1, 1] (default for audio)
             obs_dict['sound'].mul_(1.0 / 32767)
 
             sound = self.sound_head(obs_dict['sound'].float())
-            
+
             x = torch.cat((x, sound), dim=1)
 
         return x
+
 
 class LogMelAudioEncoder(nn.Module):
     def __init__(self, sample_rate, frameskip):
@@ -122,14 +127,14 @@ class LogMelAudioEncoder(nn.Module):
             f_max=7600,
         )
 
-        #Encoder
+        # Encoder
         self.conv1 = torch.nn.Conv2d(1, 16, 3, padding=1)
         self.conv2 = torch.nn.Conv2d(16, 32, 3, padding=1)
         self.pool = torch.nn.MaxPool2d(2, 2)
 
     def forward(self, x):
-        x1 = x[:,:,0]
-        x2 = x[:,:,1]
+        x1 = x[:, :, 0]
+        x2 = x[:, :, 1]
 
         # Left channel encoder
         x1 = torch.log(self.mel_spectrogram(x1) + 1e-5)
@@ -147,7 +152,7 @@ class LogMelAudioEncoder(nn.Module):
         x2 = F.relu(self.conv2(x2))
         x2 = self.pool(x2)
 
-        x = torch.cat((x1,x2), dim=1)
+        x = torch.cat((x1, x2), dim=1)
         return x
 
 
@@ -195,8 +200,49 @@ class SimpleFFTAudioEncoder(nn.Module):
         return x
 
     def forward(self, x):
-        x1 = x[:,:,0]
-        x2 = x[:,:,1]
+        x1 = x[:, :, 0]
+        x2 = x[:, :, 1]
+
+        x1 = self._encode_channel(x1)
+        x2 = self._encode_channel(x2)
+        x = torch.cat((x1, x2), dim=1)
+        return x
+
+
+class SimpleRawSamplesEncoder(nn.Module):
+    """Even simpler audio processing:
+    Samples -> Downsample (pick Nth) -> Few 1D convolutions
+    """
+    def __init__(self, sample_rate, frameskip):
+        super(SimpleFFTAudioEncoder, self).__init__()
+        self.num_to_subsample = 8
+        # ViZDoom runs at 35 fps, but we will get frameskip number of
+        # frames in total (concatenated)
+        self.num_samples = (sample_rate / 35) * frameskip
+        assert int(self.num_samples) == self.num_samples
+
+        # Encoder (small 1D conv)
+        self.pool = torch.nn.MaxPool1d(2)
+        self.conv1 = torch.nn.Conv1d(1, 16, size=16, stride=8)
+        self.conv2 = torch.nn.Conv1d(16, 32, size=16, stride=8)
+
+    def _encode_channel(self, x):
+        """Shape of x: [batch_size, num_samples]"""
+        # Subsample
+        x = x[:, ::self.num_to_subsample]
+        # Add channel dimension
+        x = x[:, None, :]
+
+        x = F.relu(self.conv1(x))
+        x = self.pool(x)
+        x = self.conv2(x)
+        x = self.pool(x)
+
+        return x
+
+    def forward(self, x):
+        x1 = x[:, :, 0]
+        x2 = x[:, :, 1]
 
         x1 = self._encode_channel(x1)
         x2 = self._encode_channel(x2)
@@ -205,20 +251,21 @@ class SimpleFFTAudioEncoder(nn.Module):
 
 
 class AudioEncoder(nn.Module):
+    """Original audio encoder code. Not currently used"""
     def __init__(self):
         super(AudioEncoder, self).__init__()
 
         self.spec = torchaudio.transforms.Spectrogram()
 
         #Encoder
-        self.conv1 = torch.nn.Conv2d(1, 4, 3, padding=1)  
+        self.conv1 = torch.nn.Conv2d(1, 4, 3, padding=1)
         self.conv2 = torch.nn.Conv2d(4, 8, 3, padding=1)
         # self.conv3 = torch.nn.Conv2d(128, 128, 4, padding=1)
         self.pool = torch.nn.MaxPool2d(2, 2)
 
     def forward(self, x):
-        x1 = x[:,:,0]
-        x2 = x[:,:,1]
+        x1 = x[:, :, 0]
+        x2 = x[:, :, 1]
 
         # Left channel encoder
         x1 = self.spec(x1)
@@ -238,9 +285,29 @@ class AudioEncoder(nn.Module):
         x2 = self.pool(x2)
         # x2 = F.relu(self.conv3(x2))
 
-        x = torch.cat((x1,x2), dim=1)
+        x = torch.cat((x1, x2), dim=1)
         return x
+
+
+# Dummy classes for the following registration
+class VizdoomSoundEncoderLogMel(VizdoomSoundEncoder):
+    def __init__(self, cfg, obs_space, timing):
+        super(VizdoomSoundEncoder, self).__init__(cfg, obs_space, timing, audio_encoder_type="logmel")
+
+
+class VizdoomSoundEncoderFFT(VizdoomSoundEncoder):
+    def __init__(self, cfg, obs_space, timing):
+        super(VizdoomSoundEncoder, self).__init__(cfg, obs_space, timing, audio_encoder_type="fft")
+
+
+class VizdoomSoundEncoderSamples(VizdoomSoundEncoder):
+    def __init__(self, cfg, obs_space, timing):
+        super(VizdoomSoundEncoder, self).__init__(cfg, obs_space, timing, audio_encoder_type="samples")
+
 
 def register_models():
     register_custom_encoder('vizdoom', VizdoomEncoder)
     register_custom_encoder('vizdoomSound', VizdoomSoundEncoder)
+    register_custom_encoder('vizdoomSoundLogMel', VizdoomSoundEncoderLogMel)
+    register_custom_encoder('vizdoomSoundFFT', VizdoomSoundEncoderFFT)
+    register_custom_encoder('vizdoomSoundSamples', VizdoomSoundEncoderSamples)
