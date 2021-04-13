@@ -164,8 +164,11 @@ class SimpleFFTAudioEncoder(nn.Module):
         self.num_to_subsample = 8
         # ViZDoom runs at 35 fps, but we will get frameskip number of
         # frames in total (concatenated)
-        self.num_frequencies = ((sample_rate / 35) * frameskip) / 2
-        assert int(self.num_frequencies) == self.num_frequencies
+        self.num_samples = (sample_rate / 35) * frameskip
+        self.num_frequencies = self.num_samples / 2
+        assert int(self.num_samples) == self.num_samples
+
+        self.hamming_window = torch.hamming_window(self.num_samples)
 
         # Subsampler
         self.pool = torch.nn.MaxPool1d(self.num_to_subsample)
@@ -176,6 +179,8 @@ class SimpleFFTAudioEncoder(nn.Module):
 
     def _torch_1d_fft_magnitude(self, x):
         """Perform 1D FFT on x with shape (batch_size, num_samples), and return magnitudes"""
+        # Apply hamming window
+        x = x * self.hamming_window
         # Add zero imaginery parts
         x = torch.stack((x, torch.zeros_like(x)), dim=-1)
         ffts = torch.fft(x, signal_ndim=1)
