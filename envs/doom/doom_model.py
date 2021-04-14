@@ -10,8 +10,8 @@ from utils.utils import log
 
 # Sampling rate.
 # NOTE: Must match with whatever game returns
-DEFAULT_SAMPLE_RATE = 44100
-# DEFAULT_SAMPLE_RATE = 22050
+# DEFAULT_SAMPLE_RATE = 44100
+DEFAULT_SAMPLE_RATE = 22050
 # DEFAULT_SAMPLE_RATE = 11025
 
 # How many frames of data have been concatenated.
