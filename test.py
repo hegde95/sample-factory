@@ -54,8 +54,8 @@ if __name__ == "__main__":
 
 
             if not done and env.unwrapped.state.audio_buffer is not None:
-                audio = state["sound"]
-                # audio = env.unwrapped.state.audio_buffer
+                # audio = state["sound"]
+                audio = env.unwrapped.state.audio_buffer
                 screen = state["obs"]
 
                 audios.extend(list(audio))
