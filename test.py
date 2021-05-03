@@ -19,9 +19,12 @@ def default_doom_cfg():
 
 if __name__ == "__main__":
 
-    env = make_doom_env('doom_sound', cfg=default_doom_cfg(), env_config=None)
-    # env = make_doom_env('doom_sound_multi', cfg=default_doom_cfg(), env_config=None)
+    # env = make_doom_env('doom_sound', cfg=default_doom_cfg(), env_config=None)
+    # env = make_doom_env('doom_sound_multi', cfg=default_doom_cfg(), env_config=None, custom_resolution = '1280x720')
+    env = make_doom_env('hell_doom_sound_multi', cfg=default_doom_cfg(), env_config=None)
     # env = MultiAgentWrapper(env)
+    # env.unwrapped.skip_frames = 1
+
     
     sleep_time = 1.0 / 35
     sf = env.skip_frames
@@ -57,9 +60,12 @@ if __name__ == "__main__":
                 # audio = state["sound"]
                 audio = env.unwrapped.state.audio_buffer
                 screen = state["obs"]
-
-                audios.extend(list(audio))
-                screens.append(np.swapaxes(np.swapaxes(screen,0,1),1,2))
+                screen = env.unwrapped.state.screen_buffer
+                
+                list_audio = list(audio)
+                # audios.extend(list_audio[:len(list_audio)//4])
+                audios.extend(list_audio)
+                screens.append(np.swapaxes(np.swapaxes(screen,0,1),1,2)[:,:,::-1])
 
             state = next_state
             step += 1
@@ -78,7 +84,7 @@ if __name__ == "__main__":
     plot.savefig('trials/'+ str(ran) +'/specr.png')
 
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-    out = cv2.VideoWriter('trials/'+ str(ran) +'/video.mp4', fourcc, 35/sf, (128,72))
+    out = cv2.VideoWriter('trials/'+ str(ran) +'/video.mp4', fourcc, 35/sf, (env.env.env.env.observation_space.shape[1],env.env.env.env.observation_space.shape[0]))
     for i in range(len(screens)):
         out.write(screens[i])
     out.release()
