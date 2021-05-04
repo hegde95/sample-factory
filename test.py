@@ -21,7 +21,8 @@ if __name__ == "__main__":
 
     # env = make_doom_env('doom_sound', cfg=default_doom_cfg(), env_config=None)
     # env = make_doom_env('doom_sound_multi', cfg=default_doom_cfg(), env_config=None, custom_resolution = '1280x720')
-    env = make_doom_env('hell_doom_sound_multi', cfg=default_doom_cfg(), env_config=None)
+    env = make_doom_env('doom_sound_multi', cfg=default_doom_cfg(), env_config=None)
+    # env = make_doom_env('hell_doom_sound_multi', cfg=default_doom_cfg(), env_config=None)
     # env = MultiAgentWrapper(env)
     # env.unwrapped.skip_frames = 1
 
