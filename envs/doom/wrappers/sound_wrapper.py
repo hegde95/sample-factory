@@ -11,7 +11,7 @@ class DoomSound(gym.Wrapper):
         self.sampling_rate_int = int(str(self.sampling_freq).split("_")[1])
 
         # self.unwrapped.skip_frames = 4
-        self.aud_len = int((1260 / (44100/self.sampling_rate_int)) * self.unwrapped.skip_frames)
+        self.aud_len = int((1260 / (44100/self.sampling_rate_int)) * self.unwrapped.number_of_audio_frames)
 
         audio_shape = [self.aud_len,2]
         sound_high = [[32767,32767]] * self.aud_len

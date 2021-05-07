@@ -13,6 +13,11 @@ def add_doom_env_args(env, parser):
     p.add_argument('--res_h', default=72, type=int, help='Game frame height after resize')
     p.add_argument('--wide_aspect_ratio', default=False, type=str2bool, help='If true render wide aspect ratio (slower but gives better FOV to the agent)')
 
+    # sound options
+    p.add_argument('--num_frames', default=4, type=int, help='Number of Audio frames in the audio state buffer')
+    p.add_argument('--sampling_rate', default=22050, type=int, help='Sampling rate used in the audio buffer, Has to be between 44100, 22050, 11025')
+
+
 
 def doom_override_defaults(env, parser):
     """RL params specific to Doom envs."""

@@ -35,14 +35,14 @@ from PIL import Image
 def enjoy(cfg, max_num_episodes=10, max_num_frames=1e9):
     cfg = load_from_checkpoint(cfg)
 
-    # render_action_repeat = cfg.render_action_repeat if cfg.render_action_repeat is not None else cfg.env_frameskip
-    render_action_repeat = 1
+    render_action_repeat = cfg.render_action_repeat if cfg.render_action_repeat is not None else cfg.env_frameskip
+    # render_action_repeat = 1
     if render_action_repeat is None:
         log.warning('Not using action repeat!')
         render_action_repeat = 1
     log.debug('Using action repeat %d during evaluation', render_action_repeat)
 
-    cfg.env_frameskip = 4  # for evaluation
+    cfg.env_frameskip = 1  # for evaluation
     cfg.num_envs = 1
 
     if cfg.record_to:
@@ -121,15 +121,17 @@ def enjoy(cfg, max_num_episodes=10, max_num_frames=1e9):
                 rnn_states = policy_outputs.rnn_states
 
                 # screen = obs[0]["obs"]
-                screen = env.unwrapped.state.screen_buffer
+                # screen = env.unwrapped.state.screen_buffer
                 audio = env.unwrapped.state.audio_buffer
                 if audio is not None:
-                    scrn = np.swapaxes(np.swapaxes(screen,0,1),1,2)
-                    screens.append(scrn)
+                    # scrn = np.swapaxes(np.swapaxes(screen,0,1),1,2)
+                    # screens.append(scrn)
                     # img = Image.fromarray(scrn, 'RGB')
                     # img.show()
-                    screens.append(screen)
-                    audios.extend(list(audio))
+                    # screens.append(screen)
+                    list_audio = list(audio)
+                    # audios.extend(list_audio[:len(list_audio)])
+                    audios.extend(list_audio)
 
                 for _ in range(render_action_repeat):
                     if not cfg.no_render:
@@ -146,6 +148,11 @@ def enjoy(cfg, max_num_episodes=10, max_num_frames=1e9):
 
                     obs, rew, done, infos = env.step(actions)
                     # obs = [obs]
+
+                    if audio is not None:
+                        screen = env.unwrapped.state.screen_buffer
+                        scrn = np.swapaxes(np.swapaxes(screen,0,1),1,2)
+                        screens.append(scrn)
 
                     episode_reward += np.mean(rew)
                     num_frames += 1
@@ -195,7 +202,7 @@ def enjoy(cfg, max_num_episodes=10, max_num_frames=1e9):
 
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
     # out = cv2.VideoWriter('trials/'+ str(ran) +'/video.mp4', fourcc, 35/env.skip_frames, (128,72))
-    out = cv2.VideoWriter('trials/'+ str(ran) +'/video.mp4', fourcc, 35/env.skip_frames, (160,120))
+    out = cv2.VideoWriter('trials/'+ str(ran) +'/video.mp4', fourcc, 35/(env.skip_frames), (160,120))
     for i in range(len(screens)):
         out.write(screens[i][:,:,::-1])
     out.release()

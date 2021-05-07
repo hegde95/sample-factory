@@ -59,8 +59,10 @@ class VizdoomSoundEncoder(EncoderBase):
         self.audio_encoder_type = audio_encoder_type
         # TODO these parameters are fed to the audio buffer.
         #      If they change in ViZDoom, remember to change them here!
-        self.sample_rate = DEFAULT_SAMPLE_RATE
-        self.frameskip = DEFAULT_FRAMESKIP
+        # self.sample_rate = DEFAULT_SAMPLE_RATE
+        self.sample_rate = cfg.sampling_rate
+        # self.frameskip = DEFAULT_FRAMESKIP
+        self.frameskip = cfg.num_frames
 
         self.basic_encoder = create_standard_encoder(cfg, obs_space, timing)
         self.encoder_out_size = self.basic_encoder.encoder_out_size

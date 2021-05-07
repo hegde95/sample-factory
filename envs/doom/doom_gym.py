@@ -87,7 +87,9 @@ class VizdoomEnv(gym.Env):
                  show_automap=False,
                  skip_frames=1,
                  async_mode=False,
-                 record_to=None):
+                 record_to=None,
+                 sampling_rate = 22050,
+                 number_of_frames = 4):
         self.initialized = False
 
         # essential game data
@@ -108,7 +110,14 @@ class VizdoomEnv(gym.Env):
         self.calc_observation_space()
 
         # added 1 extra lines here
-        self.sampling_freq = SamplingRate.SR_22050
+        if sampling_rate == 44100:
+            self.sampling_freq = SamplingRate.SR_44100
+        elif sampling_rate == 22050:
+            self.sampling_freq = SamplingRate.SR_22050
+        elif sampling_rate == 11025:
+            self.sampling_freq = SamplingRate.SR_11025
+
+        self.number_of_audio_frames = number_of_frames
 
         self.black_screen = None
 
@@ -249,6 +258,7 @@ class VizdoomEnv(gym.Env):
         # added 2 extra line here
         self.game.set_sound_enabled(True)
         self.game.set_sound_sampling_freq(self.sampling_freq)
+        self.game.set_frame_number(self.number_of_audio_frames)
 
         self._game_init()
         self.initialized = True

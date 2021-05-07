@@ -200,7 +200,7 @@ def make_doom_env_impl(
 
     if player_id is None:
         env = VizdoomEnv(
-            doom_spec.action_space, doom_spec.env_spec_file, skip_frames=skip_frames, async_mode=async_mode,
+            doom_spec.action_space, doom_spec.env_spec_file, skip_frames=skip_frames, async_mode=async_mode, sampling_rate=cfg.sampling_rate, number_of_frames = cfg.num_frames
         )
     else:
         timelimit = cfg.timelimit if cfg.timelimit is not None else doom_spec.timelimit

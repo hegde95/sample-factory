@@ -1,4 +1,4 @@
-name: sample-factory
+name: sample-factory3
 channels:
   - pytorch
   - conda-forge
@@ -119,3 +119,4 @@ dependencies:
     - tensorboardx==2.0
     - threadpoolctl==2.1.0
     - werkzeug==1.0.1
+    - torchaudio==0.6.0
