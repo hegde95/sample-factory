@@ -19,6 +19,8 @@ from algorithms.utils.arguments import parse_args, load_from_checkpoint
 from algorithms.utils.multi_agent_wrapper import MultiAgentWrapper, is_multiagent_env
 from envs.create_env import create_env
 from utils.utils import log, AttrDict
+from envs.doom.doom_utils import make_doom_env
+
 
 import cv2
 from scipy.io.wavfile import write
@@ -44,6 +46,7 @@ def enjoy(cfg, max_num_episodes=10, max_num_frames=1e9):
 
     cfg.env_frameskip = 1  # for evaluation
     cfg.num_envs = 1
+    # cfg.wide_aspect_ratio = True
 
     if cfg.record_to:
         tstamp = datetime.datetime.now().strftime('%Y_%m_%d__%H_%M_%S')
@@ -56,9 +59,10 @@ def enjoy(cfg, max_num_episodes=10, max_num_frames=1e9):
     def make_env_func(env_config):
         return create_env(cfg.env, cfg=cfg, env_config=env_config)
 
-    # env = make_doom_env('doom_sound_multi', cfg=default_doom_cfg(), env_config=None)
+    env = make_doom_env('doom_sound_multi', cfg=cfg, env_config=AttrDict({'worker_index': 0, 'vector_index': 0}), custom_resolution = '1920x1080')
 
-    env = make_env_func(AttrDict({'worker_index': 0, 'vector_index': 0}))
+    # env = make_env_func(AttrDict({'worker_index': 0, 'vector_index': 0}))
+    # env = create_env(cfg.env, cfg=cfg, env_config=AttrDict({'worker_index': 0, 'vector_index': 0}), custom_resolution = '256x144')
     env.seed(0)
 
     is_multiagent = is_multiagent_env(env)
@@ -202,7 +206,7 @@ def enjoy(cfg, max_num_episodes=10, max_num_frames=1e9):
 
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
     # out = cv2.VideoWriter('trials/'+ str(ran) +'/video.mp4', fourcc, 35/env.skip_frames, (128,72))
-    out = cv2.VideoWriter('trials/'+ str(ran) +'/video.mp4', fourcc, 35/(env.skip_frames), (160,120))
+    out = cv2.VideoWriter('trials/'+ str(ran) +'/video.mp4', fourcc, 35/(env.skip_frames), (env.screen_w,env.screen_h))
     for i in range(len(screens)):
         out.write(screens[i][:,:,::-1])
     out.release()

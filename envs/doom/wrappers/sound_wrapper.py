@@ -1,5 +1,6 @@
 import gym
 import numpy as np
+from gym import spaces
 
 class DoomSound(gym.Wrapper):
     """Add game variables to the observation space + reward shaping."""
@@ -17,12 +18,21 @@ class DoomSound(gym.Wrapper):
         sound_high = [[32767,32767]] * self.aud_len
         sound_low = [[-32767,-32767]] * self.aud_len
 
-        self.observation_space = gym.spaces.Dict({
-            'obs': current_obs_space,
-            'sound': gym.spaces.Box(
+        if isinstance(self.observation_space, spaces.Dict):
+            new_dict = {}
+            for space_name, space in self.observation_space.spaces.items():
+                new_dict[space_name] = space
+            new_dict['sound'] = gym.spaces.Box(
                 low=np.array(sound_low, dtype=np.int16), high=np.array(sound_high, dtype=np.int16),
-            ),
-        })
+            )
+            self.observation_space = gym.spaces.Dict(new_dict) 
+        else:
+            self.observation_space = gym.spaces.Dict({
+                'obs': current_obs_space,
+                'sound': gym.spaces.Box(
+                    low=np.array(sound_low, dtype=np.int16), high=np.array(sound_high, dtype=np.int16),
+                ),
+            })
 
     
 
