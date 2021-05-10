@@ -245,8 +245,10 @@ class SimpleRawSamplesEncoder(nn.Module):
 
         x = F.relu(self.conv1(x))
         x = self.pool(x)
-        x = self.conv2(x)
-        x = self.pool(x)
+
+        if x.shape[2] >= 24:
+            x = self.conv2(x)
+            x = self.pool(x)
 
         return x
 

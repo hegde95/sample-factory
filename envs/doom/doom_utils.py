@@ -166,11 +166,21 @@ DOOM_ENVS = [
     DoomSpec('doom_sound_multi', 'sound_multi.cfg', doom_action_space_basic(), 1.0, 
         extra_wrappers=[SOUND_INPUT]
     ),
-    DoomSpec('hell_doom_sound', 'hell_sound.cfg', doom_action_space_basic(), 1.0, 
+    DoomSpec('doom_hell_sound', 'hell_sound.cfg', doom_action_space_basic(), 1.0, 
         extra_wrappers=[SOUND_INPUT]
     ),
-    DoomSpec('hell_doom_sound_multi', 'hell_sound_multi.cfg', doom_action_space_basic(), 1.0, 
+    DoomSpec('doom_hell_sound_multi', 'hell_sound_multi.cfg', doom_action_space_basic(), 1.0, 
         extra_wrappers=[SOUND_INPUT]
+    ),
+
+    # Dont use this YET!!!!
+    DoomSpec(
+        'doom_duel_sound',
+        'ssl2.cfg',
+        doom_action_space_full_discretized(with_use=True),
+        1.0, int(1e9),
+        num_agents=2, num_bots=0, respawn_delay=2,
+        extra_wrappers=[ADDITIONAL_INPUT, DEATHMATCH_REWARD_SHAPING, SOUND_INPUT],
     ),
 ]
 
