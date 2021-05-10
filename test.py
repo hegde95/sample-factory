@@ -21,7 +21,8 @@ if __name__ == "__main__":
 
     # env = make_doom_env('doom_sound', cfg=default_doom_cfg(), env_config=None)
     # env = make_doom_env('doom_sound_multi', cfg=default_doom_cfg(), env_config=None, custom_resolution = '1280x720')
-    env = make_doom_env('doom_sound_multi', cfg=default_doom_cfg(), env_config=None)
+    env = make_doom_env('doom_duel_bots_sound', cfg=default_doom_cfg(), env_config=None)
+    # env = make_doom_env('doom_duel_bots', cfg=default_doom_cfg(), env_config=None)
     # env = make_doom_env('hell_doom_sound_multi', cfg=default_doom_cfg(), env_config=None)
     # env = MultiAgentWrapper(env)
     # env.unwrapped.skip_frames = 1
@@ -36,7 +37,7 @@ if __name__ == "__main__":
     screens = []
 
     frames = 0
-    episodes = 5
+    episodes = 1
 
 
     actions1 = [0,1,2]
@@ -85,7 +86,7 @@ if __name__ == "__main__":
     plot.savefig('trials/'+ str(ran) +'/specr.png')
 
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-    out = cv2.VideoWriter('trials/'+ str(ran) +'/video.mp4', fourcc, 35/sf, (env.env.env.env.observation_space.shape[1],env.env.env.env.observation_space.shape[0]))
+    out = cv2.VideoWriter('trials/'+ str(ran) +'/video.mp4', fourcc, 35/sf, (videos.shape[2], videos.shape[1]))
     for i in range(len(screens)):
         out.write(screens[i])
     out.release()

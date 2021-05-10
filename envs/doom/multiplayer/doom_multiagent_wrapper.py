@@ -187,7 +187,7 @@ class MultiAgentEnv(gym.Env, RewardShapingInterface):
         self.default_reward_shaping = get_default_reward_shaping(env)
         env.close()
 
-        self.current_reward_shaping = [self.default_reward_shaping for _ in self.num_agents]
+        self.current_reward_shaping = [self.default_reward_shaping for _ in range(self.num_agents)]
 
         self.make_env_func = make_env_func
 

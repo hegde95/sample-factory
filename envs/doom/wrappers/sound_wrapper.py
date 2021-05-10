@@ -37,7 +37,7 @@ class DoomSound(gym.Wrapper):
     
 
     def reset(self):
-        image = self.env.reset()
+        base_observation = self.env.reset()
         # audio = self.unwrapped.game.get_state().audio_buffer
         audio = self.unwrapped.state.audio_buffer
 
@@ -47,13 +47,16 @@ class DoomSound(gym.Wrapper):
         elif audio.shape[0] != self.aud_len:
             audio = np.zeros(self.observation_space['sound'].shape)
 
-
-        obs_dict = {
-            'obs':image,
-            # set to zero and run baselines
-            'sound':audio
-        }
-        return obs_dict
+        if isinstance(base_observation, dict):
+            base_observation['sound'] = audio
+            return base_observation
+        else:
+            obs_dict = {
+                'obs':base_observation,
+                # set to zero and run baselines
+                'sound':audio
+            }
+            return obs_dict
 
     def step(self, action):
         obs, rew, done, info = self.env.step(action)
@@ -64,8 +67,13 @@ class DoomSound(gym.Wrapper):
         else:
             audio = np.zeros(self.observation_space['sound'].shape)
 
-        obs_dict = {
-            'obs':obs,
-            'sound':audio
-        }
-        return obs_dict, rew, done, info
+        if isinstance(obs, dict):
+            obs['sound'] = audio
+            return obs, rew, done, info
+
+        else:
+            obs_dict = {
+                'obs':obs,
+                'sound':audio
+            }
+            return obs_dict, rew, done, info
