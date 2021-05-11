@@ -172,6 +172,9 @@ DOOM_ENVS = [
     DoomSpec('doom_hell_sound_multi', 'hell_sound_multi.cfg', doom_action_space_basic(), 1.0, 
         extra_wrappers=[SOUND_INPUT]
     ),
+    DoomSpec('doom_music_sound_multi', 'music_sound_multi.cfg', doom_action_space_basic(), 1.0,
+        extra_wrappers=[SOUND_INPUT]
+    ),
 
     # DoomSpec(
     #     'doom_duel_sound',
