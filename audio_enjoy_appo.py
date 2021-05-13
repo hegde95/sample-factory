@@ -59,7 +59,7 @@ def enjoy(cfg, max_num_episodes=10, max_num_frames=1e9):
     def make_env_func(env_config):
         return create_env(cfg.env, cfg=cfg, env_config=env_config)
 
-    env = make_doom_env('doom_sound_multi', cfg=cfg, env_config=AttrDict({'worker_index': 0, 'vector_index': 0}), custom_resolution = '1920x1080')
+    env = make_doom_env('doom_music_sound_multi', cfg=cfg, env_config=AttrDict({'worker_index': 0, 'vector_index': 0}), custom_resolution = '1920x1080')
 
     # env = make_env_func(AttrDict({'worker_index': 0, 'vector_index': 0}))
     # env = create_env(cfg.env, cfg=cfg, env_config=AttrDict({'worker_index': 0, 'vector_index': 0}), custom_resolution = '256x144')
