@@ -10,7 +10,7 @@ _params = ParamGrid([
 _experiments = [
     Experiment(
         'multi_sound_basic',
-        'python -m algorithms.appo.train_appo --algo APPO --train_for_env_steps 100000000 --num_workers 24 --num_envs_per_worker 20 --experiment multisound_hell_vizdoomSoundFFT_3',
+        'python -m algorithms.appo.train_appo --algo APPO --train_for_env_steps 100000000 --num_workers 18 --num_envs_per_worker 20 --experiment multisound_hell_vizdoomSoundFFT_3',
         _params.generate_params(randomize=False),
     ),
 ]
