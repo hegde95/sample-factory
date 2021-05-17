@@ -191,23 +191,23 @@ DOOM_ENVS = [
         extra_wrappers=[SOUND_INPUT]
     ),
 
-    # DoomSpec(
-    #     'doom_duel_sound',
-    #     'ssl2.cfg',
-    #     doom_action_space_full_discretized(with_use=True),
-    #     1.0, int(1e9),
-    #     num_agents=2, num_bots=0, respawn_delay=2,
-    #     extra_wrappers=[ADDITIONAL_INPUT, DEATHMATCH_REWARD_SHAPING, SOUND_INPUT],
-    # ),
-    
     DoomSpec(
-        'doom_duel_bots_sound',
+        'doom_duel_sound',
         'ssl2.cfg',
         doom_action_space_full_discretized(with_use=True),
         1.0, int(1e9),
-        num_agents=1, num_bots=1, respawn_delay=2,
-        extra_wrappers=[ADDITIONAL_INPUT, BOTS_REWARD_SHAPING, SOUND_INPUT],
+        num_agents=2, num_bots=0, respawn_delay=2,
+        extra_wrappers=[ADDITIONAL_INPUT, DEATHMATCH_REWARD_SHAPING, SOUND_INPUT],
     ),
+    
+    # DoomSpec(
+    #     'doom_duel_bots_sound',
+    #     'ssl2.cfg',
+    #     doom_action_space_full_discretized(with_use=True),
+    #     1.0, int(1e9),
+    #     num_agents=1, num_bots=1, respawn_delay=2,
+    #     extra_wrappers=[ADDITIONAL_INPUT, BOTS_REWARD_SHAPING, SOUND_INPUT],
+    # ),
 ]
 
 

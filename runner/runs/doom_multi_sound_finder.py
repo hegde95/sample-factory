@@ -3,7 +3,7 @@ from runner.run_description import RunDescription, Experiment, ParamGrid
 _params = ParamGrid([
     ('seed', [0, 1111, 2222, 3333, 4444]),
     # ('seed', [0, 1111, 2222]),
-    ('env', ['doom_music_sound_multi', 'doom_music_sound_single']),
+    ('env', ['doom_music_sound_multi']),
     ('encoder_custom', ['vizdoom', 'vizdoomSoundSamples', 'vizdoomSoundLogMel', 'vizdoomSoundFFT']),
 ])
 

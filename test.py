@@ -12,16 +12,19 @@ import cv2
 from scipy.io.wavfile import write
 import moviepy.editor as mpe
 import matplotlib.pyplot as plot
+from utils.utils import log, AttrDict
 
 
 def default_doom_cfg():
-    return default_cfg(env='doom_env')
+    return default_cfg(env='doom_duel_sound')
 
 if __name__ == "__main__":
 
     # env = make_doom_env('doom_sound', cfg=default_doom_cfg(), env_config=None)
-    # env = make_doom_env('doom_music_sound_multi', cfg=default_doom_cfg(), env_config=None, custom_resolution = '1280x720')
-    env = make_doom_env('doom_duel_bots_sound', cfg=default_doom_cfg(), env_config=None)
+    env = make_doom_env('doom_music_sound_multi', cfg=default_doom_cfg(), env_config=None, custom_resolution = '1280x720')
+
+    # env_config = AttrDict({'worker_index': 0, 'vector_index': 0, 'safe_init': False})
+    # env = make_doom_env('doom_duel_sound', cfg=default_doom_cfg(), env_config=env_config)
     # env = make_doom_env('doom_duel_bots', cfg=default_doom_cfg(), env_config=None)
     # env = make_doom_env('hell_doom_sound_multi', cfg=default_doom_cfg(), env_config=None)
     # env = MultiAgentWrapper(env)
