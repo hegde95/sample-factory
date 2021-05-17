@@ -176,6 +176,16 @@ DOOM_ENVS = [
         extra_wrappers=[SOUND_INPUT]
     ),
 
+    DoomSpec('doom_sound_instruction', 'instruction_sound.cfg', doom_action_space_basic(), 1.0,
+        extra_wrappers=[SOUND_INPUT]
+    ),
+    DoomSpec('doom_once_sound_instruction', 'instruction_once_sound.cfg', doom_action_space_basic(), 1.0,
+        extra_wrappers=[SOUND_INPUT]
+    ),
+    DoomSpec('doom_memory_sound', 'memory_sound_finder.cfg', doom_action_space_basic(), 1.0,
+        extra_wrappers=[SOUND_INPUT]
+    ),
+
     # DoomSpec(
     #     'doom_duel_sound',
     #     'ssl2.cfg',
