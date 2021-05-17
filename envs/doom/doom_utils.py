@@ -160,19 +160,24 @@ DOOM_ENVS = [
     # (no widescreen)
     DoomSpec('doom_benchmark', 'battle.cfg', Discrete(1 + 8), 1.0, 2100),
 
-    DoomSpec('doom_sound', 'sound.cfg', doom_action_space_basic(), 1.0, 
-        extra_wrappers=[SOUND_INPUT]
-    ),
-    DoomSpec('doom_sound_multi', 'sound_multi.cfg', doom_action_space_basic(), 1.0, 
-        extra_wrappers=[SOUND_INPUT]
-    ),
-    DoomSpec('doom_hell_sound', 'hell_sound.cfg', doom_action_space_basic(), 1.0, 
-        extra_wrappers=[SOUND_INPUT]
-    ),
-    DoomSpec('doom_hell_sound_multi', 'hell_sound_multi.cfg', doom_action_space_basic(), 1.0, 
-        extra_wrappers=[SOUND_INPUT]
-    ),
+    # DoomSpec('doom_sound', 'sound.cfg', doom_action_space_basic(), 1.0, 
+    #     extra_wrappers=[SOUND_INPUT]
+    # ),
+    # DoomSpec('doom_sound_multi', 'sound_multi.cfg', doom_action_space_basic(), 1.0, 
+    #     extra_wrappers=[SOUND_INPUT]
+    # ),
+    # DoomSpec('doom_hell_sound', 'hell_sound.cfg', doom_action_space_basic(), 1.0, 
+    #     extra_wrappers=[SOUND_INPUT]
+    # ),
+    # DoomSpec('doom_hell_sound_multi', 'hell_sound_multi.cfg', doom_action_space_basic(), 1.0, 
+    #     extra_wrappers=[SOUND_INPUT]
+    # ),
+
     DoomSpec('doom_music_sound_multi', 'music_sound_multi.cfg', doom_action_space_basic(), 1.0,
+        extra_wrappers=[SOUND_INPUT]
+    ),
+
+    DoomSpec('doom_music_sound_single', 'music_sound.cfg', doom_action_space_basic(), 1.0,
         extra_wrappers=[SOUND_INPUT]
     ),
 
