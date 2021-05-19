@@ -2,6 +2,7 @@ import gym
 import numpy as np
 from gym import spaces
 
+
 class DoomSound(gym.Wrapper):
     """Add game variables to the observation space + reward shaping."""
 
@@ -33,8 +34,6 @@ class DoomSound(gym.Wrapper):
                     low=np.array(sound_low, dtype=np.int16), high=np.array(sound_high, dtype=np.int16),
                 ),
             })
-
-    
 
     def reset(self):
         base_observation = self.env.reset()
