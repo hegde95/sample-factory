@@ -173,23 +173,13 @@ DOOM_ENVS = [
     #     extra_wrappers=[SOUND_INPUT]
     # ),
 
-    DoomSpec('doom_music_sound_multi', 'music_sound_multi.cfg', doom_action_space_basic(), 1.0,
-        extra_wrappers=[SOUND_INPUT]
-    ),
+    DoomSpec('doom_music_sound_multi', 'music_sound_multi.cfg', doom_action_space_basic(), 1.0),
 
-    DoomSpec('doom_music_sound_single', 'music_sound.cfg', doom_action_space_basic(), 1.0,
-        extra_wrappers=[SOUND_INPUT]
-    ),
+    DoomSpec('doom_music_sound_single', 'music_sound.cfg', doom_action_space_basic(), 1.0),
 
-    DoomSpec('doom_sound_instruction', 'instruction_sound.cfg', doom_action_space_basic(), 1.0,
-        extra_wrappers=[SOUND_INPUT]
-    ),
-    DoomSpec('doom_once_sound_instruction', 'instruction_once_sound.cfg', doom_action_space_basic(), 1.0,
-        extra_wrappers=[SOUND_INPUT]
-    ),
-    DoomSpec('doom_memory_sound', 'memory_sound_finder.cfg', doom_action_space_basic(), 1.0,
-        extra_wrappers=[SOUND_INPUT]
-    ),
+    DoomSpec('doom_sound_instruction', 'instruction_sound.cfg', doom_action_space_basic(), 1.0),
+    DoomSpec('doom_once_sound_instruction', 'instruction_once_sound.cfg', doom_action_space_basic(), 1.0),
+    DoomSpec('doom_memory_sound', 'memory_sound_finder.cfg', doom_action_space_basic(), 1.0),
 
     DoomSpec(
         'doom_duel_sound',
@@ -197,7 +187,7 @@ DOOM_ENVS = [
         doom_action_space_full_discretized(with_use=True),
         1.0, int(1e9),
         num_agents=2, num_bots=0, respawn_delay=2,
-        extra_wrappers=[ADDITIONAL_INPUT, DEATHMATCH_REWARD_SHAPING, SOUND_INPUT],
+        extra_wrappers=[ADDITIONAL_INPUT, DEATHMATCH_REWARD_SHAPING],
     ),
     
     # DoomSpec(
@@ -236,7 +226,10 @@ def make_doom_env_impl(
 
     if player_id is None:
         env = VizdoomEnv(
-            doom_spec.action_space, doom_spec.env_spec_file, skip_frames=skip_frames, async_mode=async_mode, sampling_rate=cfg.sampling_rate, number_of_frames = cfg.num_frames
+            doom_spec.action_space, doom_spec.env_spec_file, skip_frames=skip_frames, async_mode=async_mode,
+            sound_enabled=cfg.doom_sound_enabled,
+            sound_sampling_rate=cfg.sampling_rate,
+            sound_obs_num_frames=cfg.num_frames,
         )
     else:
         timelimit = cfg.timelimit if cfg.timelimit is not None else doom_spec.timelimit
@@ -249,7 +242,9 @@ def make_doom_env_impl(
             async_mode=async_mode,
             respawn_delay=doom_spec.respawn_delay,
             timelimit=timelimit,
-            sampling_rate=cfg.sampling_rate, number_of_frames = cfg.num_frames
+            sound_enabled=cfg.doom_sound_enabled,
+            sound_sampling_rate=cfg.sampling_rate,
+            sound_obs_num_frames=cfg.num_frames,
         )
 
     record_to = cfg.record_to if 'record_to' in cfg else None
@@ -295,6 +290,10 @@ def make_doom_env_impl(
     if doom_spec.extra_wrappers is not None:
         for wrapper_cls, wrapper_kwargs in doom_spec.extra_wrappers:
             env = wrapper_cls(env, **wrapper_kwargs)
+
+    if cfg.doom_sound_enabled:
+        log.debug('Sound enabled! Adding additional sound observations')
+        env = DoomSound(env)
 
     if doom_spec.reward_scaling != 1.0:
         env = RewardScalingWrapper(env, doom_spec.reward_scaling)

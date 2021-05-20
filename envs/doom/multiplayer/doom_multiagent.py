@@ -34,15 +34,17 @@ class VizdoomEnvMultiplayer(VizdoomEnv):
             respawn_delay=0,
             timelimit=0.0,
             record_to=None,
-            sampling_rate = 22050,
-            number_of_frames = 4):
+            sound_enabled=True,
+            sound_sampling_rate=22050,
+            sound_obs_num_frames=4):
         super().__init__(
             action_space,
             config_file,
             skip_frames=skip_frames, async_mode=async_mode,
             record_to=record_to,
-            sampling_rate = sampling_rate,
-            number_of_frames = number_of_frames
+            sound_enabled=sound_enabled,
+            sound_sampling_rate=sound_sampling_rate,
+            sound_obs_num_frames=sound_obs_num_frames,
         )
 
         self.worker_index = 0
@@ -143,9 +145,9 @@ class VizdoomEnvMultiplayer(VizdoomEnv):
         self.game.set_episode_timeout(int(self.timelimit * 60 * self.game.get_ticrate()))
 
         # added 2 extra line here
-        self.game.set_sound_enabled(True)
+        self.game.set_sound_enabled(self.sound_enabled)
         self.game.set_sound_sampling_freq(self.sampling_freq)
-        self.game.set_frame_number(self.number_of_audio_frames)
+        self.game.set_sound_observation_num_frames(self.number_of_audio_frames)
         
         self._game_init(with_locking=False)  # locking is handled by the multi-agent wrapper
         log.info('Initialized w:%d v:%d player:%d', self.worker_index, self.vector_index, self.player_id)
