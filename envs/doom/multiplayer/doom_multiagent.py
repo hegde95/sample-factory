@@ -224,4 +224,7 @@ class VizdoomEnvMultiplayer(VizdoomEnv):
                 self.game.send_game_command('stop')
 
         observation, done, info = self._process_game_step(state, done, {})
+        if state:
+            info["sound_buffer_raw"] = state.audio_buffer
+            info["image_buffer_raw"] = state.screen_buffer
         return observation, reward, done, info

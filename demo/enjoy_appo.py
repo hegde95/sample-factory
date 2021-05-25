@@ -34,8 +34,18 @@ from PIL import Image
 # def default_doom_cfg():
 #     return default_cfg(env='doom_env')
 
+# python -m demo.enjoy_appo --env doom_sound_instruction --train_dir train_dir_for_demo --experiment 17_doom_sound_instruction_see_4444_env_doom_sound_instruction_enc_vizdoomSoundFFT --algo APPO --experiments_root ./
+# python -m demo.enjoy_appo --env doom_once_sound_instruction --train_dir train_dir_for_demo --experiment 19_doom_sound_instruction_see_4444_env_doom_once_sound_instruction_enc_vizdoomSoundFFT --algo APPO --experiments_root ./
+
 def enjoy(cfg, max_num_episodes=10, max_num_frames=1e9):
+    # cfg.train_dir = "/home/khegde/Desktop/Github2/sample-factory/train_dir_for_demo"
+    train_dir = cfg.train_dir
     cfg = load_from_checkpoint(cfg)
+    cfg.train_dir = train_dir
+
+    # cfg.train_dir = "/home/khegde/Desktop/Github2/sample-factory/train_dir_for_demo"
+    # cfg.experiments_root = "./"
+    cfg.record_to = False
 
     render_action_repeat = cfg.render_action_repeat if cfg.render_action_repeat is not None else cfg.env_frameskip
     # render_action_repeat = 1
@@ -59,7 +69,7 @@ def enjoy(cfg, max_num_episodes=10, max_num_frames=1e9):
     def make_env_func(env_config):
         return create_env(cfg.env, cfg=cfg, env_config=env_config)
 
-    env = make_doom_env('doom_music_sound_multi', cfg=cfg, env_config=AttrDict({'worker_index': 0, 'vector_index': 0}), custom_resolution = '1920x1080')
+    env = make_doom_env(cfg.env, cfg=cfg, env_config=AttrDict({'worker_index': 0, 'vector_index': 0}), custom_resolution = '1920x1080')
 
     # env = make_env_func(AttrDict({'worker_index': 0, 'vector_index': 0}))
     # env = create_env(cfg.env, cfg=cfg, env_config=AttrDict({'worker_index': 0, 'vector_index': 0}), custom_resolution = '256x144')
@@ -81,6 +91,7 @@ def enjoy(cfg, max_num_episodes=10, max_num_frames=1e9):
 
     policy_id = cfg.policy_index
     checkpoints = LearnerWorker.get_checkpoints(LearnerWorker.checkpoint_dir(cfg, policy_id))
+    print(checkpoints)
     checkpoint_dict = LearnerWorker.load_checkpoint(checkpoints, device)
     actor_critic.load_state_dict(checkpoint_dict['model'])
 
@@ -196,26 +207,26 @@ def enjoy(cfg, max_num_episodes=10, max_num_frames=1e9):
     audios = np.array(audios)
     videos = np.array(screens)
 
-    ran = np.random.randint(200)
-    os.makedirs("trials/"+str(ran), exist_ok=True)
+    # ran = np.random.randint(200)
+    os.makedirs("demo/videos/"+cfg.env, exist_ok=True)
 
     plot.specgram(audios[:,0])
-    plot.savefig('trials/'+ str(ran) +'/specl.png')
+    plot.savefig('demo/videos/'+ cfg.env +'/specl.png')
     plot.specgram(audios[:,1])
-    plot.savefig('trials/'+ str(ran) +'/specr.png')
+    plot.savefig('demo/videos/'+ cfg.env +'/specr.png')
 
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-    # out = cv2.VideoWriter('trials/'+ str(ran) +'/video.mp4', fourcc, 35/env.skip_frames, (128,72))
-    out = cv2.VideoWriter('trials/'+ str(ran) +'/video.mp4', fourcc, 35/(env.skip_frames), (env.screen_w,env.screen_h))
+    # out = cv2.VideoWriter('demo/videos/'+ cfg.env +'/video.mp4', fourcc, 35/env.skip_frames, (128,72))
+    out = cv2.VideoWriter('demo/videos/'+ cfg.env +'/video.mp4', fourcc, 35/(env.skip_frames), (env.screen_w,env.screen_h))
     for i in range(len(screens)):
         out.write(screens[i][:,:,::-1])
     out.release()
-    write('trials/'+ str(ran) +'/audio.wav', env.sampling_rate_int, audios)
+    write('demo/videos/'+ cfg.env +'/audio.wav', env.sampling_rate_int, audios)
     # print("total audio time should be :" + str(d))
-    my_clip = mpe.VideoFileClip('trials/'+ str(ran) +'/video.mp4')
-    audio_background = mpe.AudioFileClip('trials/'+ str(ran) +'/audio.wav')
+    my_clip = mpe.VideoFileClip('demo/videos/'+ cfg.env +'/video.mp4')
+    audio_background = mpe.AudioFileClip('demo/videos/'+ cfg.env +'/audio.wav')
     final_clip = my_clip.set_audio(audio_background)
-    final_clip.write_videofile("trials/"+ str(ran) +"/movie.mp4")
+    final_clip.write_videofile("demo/videos/"+ cfg.env +"/movie.mp4")
     return ExperimentStatus.SUCCESS, np.mean(episode_rewards)
 
 
