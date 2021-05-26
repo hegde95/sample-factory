@@ -32,9 +32,9 @@ from PIL import Image
 AGENTS = ["Sound", "Sound_Deaf", "Baseline"]
 
 AGENT1 = "Sound"
-AGENT2 = "Sound_Deaf"
-MAKE_VIDEO = False
-MAX_EP = 100
+AGENT2 = "Baseline"
+MAKE_VIDEO = True
+MAX_EP = 1
 baseline_dir = '/home/khegde/Desktop/Github2/sample-factory/train_dir_for_demo/00_duel_without_sound_self_play_ppo_1/checkpoint_p0'
 
 def enjoy(cfg, max_num_episodes=MAX_EP, max_num_frames=1e9):
@@ -190,7 +190,7 @@ def enjoy(cfg, max_num_episodes=MAX_EP, max_num_frames=1e9):
                         env.render()
 
                     obs, rew, done, infos = env.step(np.array([actions[0], actions_b[0]]))
-                    if 'sound_buffer_raw' in infos[0].keys():
+                    if 'sound_buffer_raw' in infos[0].keys() and MAKE_VIDEO:
                         audio = infos[0]['sound_buffer_raw']
                         if audio is not None:
                             list_audio = list(audio)
@@ -200,6 +200,7 @@ def enjoy(cfg, max_num_episodes=MAX_EP, max_num_frames=1e9):
                             screen1 = infos[0]['image_buffer_raw']
                             screen2 = infos[1]['image_buffer_raw']
                             scrn = np.swapaxes(np.swapaxes(screen1,0,1),1,2)
+                            scrn = cv2.resize(scrn, dsize=(1280, 720), interpolation=cv2.INTER_CUBIC)
                             screens.append(scrn)
 
                     episode_reward += np.mean(rew)
@@ -256,24 +257,25 @@ def enjoy(cfg, max_num_episodes=MAX_EP, max_num_frames=1e9):
         
     }
 
-    audios = np.array(audios)
-    videos = np.array(screens)
+
+    print(result_log)
 
     # ran = np.random.randint(200)
     os.makedirs("demo/videos/"+cfg.env, exist_ok=True)
     log_dir = 'demo/videos/'+ cfg.env + "/" +  AGENT1 + "-vs-" + AGENT2 + "_ep_" + str(max_num_episodes)
     os.makedirs(log_dir, exist_ok=True)
     # " + AGENT1 + "-vs-" + AGENT2 + "
-
-    plot.specgram(audios[:,0])
-    plot.savefig(log_dir +'/specl.png')
-    plot.specgram(audios[:,1])
-    plot.savefig(log_dir +'/specr.png')
-
     if MAKE_VIDEO:
+        audios = np.array(audios)
+        videos = np.array(screens)
+        plot.specgram(audios[:,0])
+        plot.savefig(log_dir +'/specl.png')
+        plot.specgram(audios[:,1])
+        plot.savefig(log_dir +'/specr.png')
+
         fourcc = cv2.VideoWriter_fourcc(*'mp4v')
         # out = cv2.VideoWriter('demo/videos/'+ cfg.env +'/video.mp4', fourcc, 35/env.skip_frames, (128,72))
-        out = cv2.VideoWriter(log_dir+'/video.mp4', fourcc, 35/(env.skip_frames), (160,120))
+        out = cv2.VideoWriter(log_dir+'/video.mp4', fourcc, 35/(env.skip_frames), (1280, 720))
         for i in range(len(screens)):
             out.write(screens[i][:,:,::-1])
         out.release()

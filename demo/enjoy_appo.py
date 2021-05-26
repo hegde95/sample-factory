@@ -34,8 +34,11 @@ from PIL import Image
 # def default_doom_cfg():
 #     return default_cfg(env='doom_env')
 
+
+# python -m demo.enjoy_appo --env doom_music_sound_multi --train_dir train_dir_for_demo --experiment 19_multi_sound_basic_see_4444_env_doom_music_sound_multi_enc_vizdoomSoundFFT --algo APPO --experiments_root ./
 # python -m demo.enjoy_appo --env doom_sound_instruction --train_dir train_dir_for_demo --experiment 17_doom_sound_instruction_see_4444_env_doom_sound_instruction_enc_vizdoomSoundFFT --algo APPO --experiments_root ./
 # python -m demo.enjoy_appo --env doom_once_sound_instruction --train_dir train_dir_for_demo --experiment 19_doom_sound_instruction_see_4444_env_doom_once_sound_instruction_enc_vizdoomSoundFFT --algo APPO --experiments_root ./
+# python -m demo.enjoy_appo --env doom_memory_sound --train_dir train_dir_for_demo --experiment 01_doom_sound_memory_see_0_env_doom_memory_sound_enc_vizdoomSoundFFT --algo APPO --experiments_root ./
 
 def enjoy(cfg, max_num_episodes=10, max_num_frames=1e9):
     # cfg.train_dir = "/home/khegde/Desktop/Github2/sample-factory/train_dir_for_demo"

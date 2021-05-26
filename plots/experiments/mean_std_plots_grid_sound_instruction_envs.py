@@ -25,7 +25,9 @@ from tensorflow.core.util.event_pb2 import Event
 
 set_matplotlib_params()
 
-plt.rcParams['figure.figsize'] = (1.5*8.20, 2) #(2.5, 2.0) 7.5， 4
+# plt.rcParams['figure.figsize'] = (1.5*8.20, 2) #(2.5, 2.0) 7.5， 4
+plt.rcParams['figure.figsize'] = (1.5*8.20, 1.5) #7.5， 4
+ar = 1.3/3
 
 
 ENVS_LIST = [
@@ -43,7 +45,7 @@ PLOT_NAMES = dict(
 
 ENCODERS = ['vizdoom','vizdoomSoundFFT']
 ENCODERS_COLOR = {'vizdoom':DARK_GREY,'vizdoomSoundFFT':ORANGE}
-ENCODERS_NAMES = {'vizdoom':'baseline','vizdoomSoundFFT':'Fourier transform'}
+ENCODERS_NAMES = {'vizdoom':'No sound','vizdoomSoundFFT':'Fourier transform'}
 
 
 FOLDER_NAME = 'aggregates'
@@ -259,7 +261,7 @@ def plot(env, key, interpolated_key, ax, count):
     # if i == 1:
     ax.set_xlabel('Env. frames, skip=4', fontsize=8)
     if count == 0:
-        ax.set_ylabel('Average return', fontsize=8)
+        ax.set_ylabel('Success rate', fontsize=8)
 
     # hide tick of axis
     ax.xaxis.tick_bottom()
@@ -357,7 +359,7 @@ def main():
 
     # zhehui
     fig, (ax1) = plt.subplots(1, 1)
-    ax1.set_box_aspect(1/3)
+    ax1.set_box_aspect(ar)
     ax = (ax1)
 
 

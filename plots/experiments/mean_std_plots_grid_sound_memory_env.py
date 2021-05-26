@@ -21,7 +21,7 @@ import tensorflow as tf
 from tensorboard.backend.event_processing.event_accumulator import EventAccumulator
 from tensorflow.core.util.event_pb2 import Event
 
-# python -m plots.experiments.mean_std_plots_grid_sound_envs --path train_dir/doom_multi_sound_basic/multi_sound_basic_
+# python -m plots.experiments.mean_std_plots_grid_sound_memory_env --path train_dir/doom_sound_memory/doom_sound_memory_ --env doom_sound_memory
 
 set_matplotlib_params()
 
@@ -29,8 +29,10 @@ set_matplotlib_params()
 plt.rcParams['figure.figsize'] = (1.5*8.20, 1.5) #7.5， 4
 ar = 1.3/3
 
+
 ENVS_LIST = [
-    ('doom_music_sound_multi', None),
+    ('doom_sound_memory', None),
+    # ('doom_once_sound_instruction', None),
 ]
 
 PLOT_NAMES = dict(
@@ -41,20 +43,18 @@ PLOT_NAMES = dict(
 #     doom_music_sound_multi=0.98,
 # )
 
-ENCODERS = ['vizdoom','vizdoomSoundSamples','vizdoomSoundLogMel','vizdoomSoundFFT']
-ENCODERS_COLOR = {'vizdoom':DARK_GREY,'vizdoomSoundSamples':BLUE,'vizdoomSoundLogMel':GREEN,'vizdoomSoundFFT':ORANGE}
-ENCODERS_NAMES = {
-    'vizdoom':'No sound',
-    'vizdoomSoundSamples':'1D Conv',
-    'vizdoomSoundLogMel':'Mel-spectrogram',
-    'vizdoomSoundFFT':'Fourier transform'}
+ENCODERS = ['vizdoom','vizdoomSoundFFT']
+ENCODERS_COLOR = {'vizdoom':DARK_GREY,'vizdoomSoundFFT':ORANGE}
+ENCODERS_NAMES = {'vizdoom':'No sound','vizdoomSoundFFT':'Fourier transform'}
+
 
 FOLDER_NAME = 'aggregates'
 hide_file = [f for f in os.listdir(os.getcwd()) if not f.startswith('.') and not f.endswith('.py')]
 
-CACHE = True
+CACHE = False
+NO = 0
 
-def extract(experiments):
+def extract(experiments, enc = None):
     # scalar_accumulators = [EventAccumulator(str(dpath / dname / subpath)).Reload().scalars
     #                        for dname in os.listdir(dpath) if dname != FOLDER_NAME and dname in hide_file]
 
@@ -83,7 +83,7 @@ def extract(experiments):
 
     # modify_all_steps_per_key = tuple(int(step_id*1e6) for step_id in range(1, int(1e8/1e6 + 1)))
     plot_step = int(2.5e6)
-    all_steps_per_key = [[tuple(int(step_id) for step_id in range(0, int(5e8), plot_step)) for scalar_events in sorted(all_scalar_events)]
+    all_steps_per_key = [[tuple(int(step_id) for step_id in range(0, int(2e9), plot_step)) for scalar_events in sorted(all_scalar_events)]
                          for all_scalar_events in all_scalar_events_per_key]
 
     for i, all_steps in enumerate(all_steps_per_key):
@@ -108,9 +108,15 @@ def extract(experiments):
     x_steps = x_per_key[key_idx]
 
     interpolated_y = [[] for _ in values]
+    # NO += 1
 
+    if enc == 'vizdoom':
+        dum = x_steps[0]
+        x_steps[0] = x_steps[1]
+        x_steps[1] = dum
     for i in range(len(values)):
         idx = 0
+
 
         values[i] = values[i][2:]
         x_steps[i] = x_steps[i][2:]
@@ -207,7 +213,7 @@ def aggregate(enc, experiments, count, ax):
             with open(join(cache_enc, f'{enc}.pickle'), 'wb') as fobj:
                 pickle.dump(interpolated_keys, fobj)
     else:
-        interpolated_keys = extract(experiments)
+        interpolated_keys = extract(experiments, enc)
 
     for key in interpolated_keys.keys():
         plot(enc, key, interpolated_keys[key], ax, count)
@@ -313,9 +319,10 @@ def main():
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--path', type=str, help='main path for tensorboard files', default=os.getcwd())
-    # parser.add_argument('--path', type=str, help='main path for tensorboard files', default='train_dir/doom_multi_sound_basic/multi_sound_basic_')
+    # parser.add_argument('--path', type=str, help='main path for tensorboard files', default='/home/khegde/Desktop/Github2/sample-factory/train_dir/doom_sound_instruction/doom_sound_instruction_')
     parser.add_argument('--subpaths', type=param_list, help='subpath sturctures', default=['test', 'train'])
     parser.add_argument('--output', type=str, help='aggregation can be saves as tensorboard file (summary) or as table (csv)', default='csv')
+    parser.add_argument('--env', type=str, help='choose doom_sound_instruction | doom_once_sound_instruction', default='doom_once_sound_instruction')
 
     args = parser.parse_args()
 
@@ -364,9 +371,13 @@ def main():
 
 
     count = 0
+    # experiments = [experiment for experiment in experiments if experiment.split('/')[-3].split('_')[-1] == env]
     # for env, experiments in experiments_by_env.items():
     #     aggregate(env, experiments, count, ax[count])
     #     count += 1
+    experiments = experiments_by_env[args.env]
+    NO = 0
+
     for encoder in ENCODERS:
         enc_experiments = [experiment for experiment in experiments if experiment.split('/')[-3].split('_')[-1] == encoder]
         aggregate(encoder, enc_experiments, count, ax)
@@ -382,7 +393,7 @@ def main():
     plot_name = f'six_final_plots'
     # plt.savefig(os.path.join(os.getcwd(), f'../final_plots/reward_{plot_name}.pdf'), format='pdf', bbox_inches='tight', pad_inches=0)
     os.makedirs("plots/sound_plots", exist_ok=True)
-    plt.savefig("plots/sound_plots/doom_music_sound_multi.pdf", format='pdf', bbox_inches='tight', pad_inches=0)
+    plt.savefig("plots/sound_plots/"+ args.env + ".pdf", format='pdf', bbox_inches='tight', pad_inches=0)
     # plt.savefig("dum/dum.pdf", format='pdf', pad_inches=0)
 
     return 0
